@@ -1,7 +1,7 @@
 // ================================================================
 // SERVICE WORKER — MesurePro
 // ================================================================
-const CACHE_NAME = 'mesurepro-v1.4';
+const CACHE_NAME = 'mesurepro-v1.4.1';
 const ASSETS = [
   './',
   './index.html',
