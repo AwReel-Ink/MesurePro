@@ -642,7 +642,7 @@ html, body {
 <div class="modal-overlay" id="modal-settings">
   <div class="modal">
     <h2>⚙️ Paramètres & Infos</h2>
-    <div class="settings-row"><span class="settings-label">Version</span><span class="settings-val">1.4.1</span></div>
+    <div class="settings-row"><span class="settings-label">Version</span><span class="settings-val">1.4.2</span></div>
     <div class="settings-row"><span class="settings-label">DPI utilisé</span><span class="settings-val" id="set-dpi">---</span></div>
     <div class="settings-row"><span class="settings-label">Résolution écran</span><span class="settings-val" id="set-res">---</span></div>
     <div class="settings-row"><span class="settings-label">Device Pixel Ratio</span><span class="settings-val" id="set-dpr">---</span></div>
@@ -651,7 +651,7 @@ html, body {
     <div class="copyright">
       © Copyright — LEROY Aurélien — 2026<br>
       Tous droits réservés<br>
-      <strong>MesurePro</strong> Version 1.4.1
+      <strong>MesurePro</strong> Version 1.4.2
     </div>
     <button class="modal-close" onclick="closeModal('modal-settings')">Fermer</button>
   </div>
@@ -1812,7 +1812,7 @@ let compassHeading = 0;
 let compassTargetHeading = 0;
 let compassFirstReading = true;
 let compassSamples = [];
-const COMPASS_SAMPLE_SIZE = 8;
+const COMPASS_SAMPLE_SIZE = 16;
 let compassHasOrientation = false;
 let compassAnimId = null;
 let compassListenerAttached = false;
@@ -1860,7 +1860,7 @@ function compassHandler(e) {
     compassFirstReading = false;
   } else {
     let diff = ((avg - compassTargetHeading + 540) % 360) - 180;
-    if (Math.abs(diff) >= 2) {
+    if (Math.abs(diff) >= 3) {
       compassTargetHeading = avg;
     }
   }
@@ -1909,7 +1909,7 @@ function lerpAngle(current, target, factor) {
 function compassLoop() {
   if (currentPanel === 'compass') {
     // Lissage visuel doux (rendu animé fluide vers la cible filtrée)
-    compassHeading = lerpAngle(compassHeading, compassTargetHeading, 0.15);
+    compassHeading = lerpAngle(compassHeading, compassTargetHeading, 0.08);
     drawCompass();
     compassAnimId = requestAnimationFrame(compassLoop);
   } else {
