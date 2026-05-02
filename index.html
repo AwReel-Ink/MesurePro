@@ -642,7 +642,7 @@ html, body {
 <div class="modal-overlay" id="modal-settings">
   <div class="modal">
     <h2>⚙️ Paramètres & Infos</h2>
-    <div class="settings-row"><span class="settings-label">Version</span><span class="settings-val">1.1</span></div>
+    <div class="settings-row"><span class="settings-label">Version</span><span class="settings-val">1.2</span></div>
     <div class="settings-row"><span class="settings-label">DPI utilisé</span><span class="settings-val" id="set-dpi">---</span></div>
     <div class="settings-row"><span class="settings-label">Résolution écran</span><span class="settings-val" id="set-res">---</span></div>
     <div class="settings-row"><span class="settings-label">Device Pixel Ratio</span><span class="settings-val" id="set-dpr">---</span></div>
@@ -651,7 +651,7 @@ html, body {
     <div class="copyright">
       © Copyright — LEROY Aurélien — 2026<br>
       Tous droits réservés<br>
-      <strong>MesurePro</strong> Version 1.1
+      <strong>MesurePro</strong> Version 1.2
     </div>
     <button class="modal-close" onclick="closeModal('modal-settings')">Fermer</button>
   </div>
@@ -661,8 +661,45 @@ html, body {
 /* ================================================================
    CORE — DPI & CONVERSIONS
 ================================================================ */
-let customDPI = null;
+const CALIB_STORAGE_KEY = 'mesurepro_custom_dpi_v1';
+
+// Chargement immédiat depuis localStorage au démarrage du script
+let customDPI = (() => {
+  try {
+    const raw = localStorage.getItem(CALIB_STORAGE_KEY);
+    if (raw) {
+      const val = parseFloat(raw);
+      if (!isNaN(val) && val > 50 && val < 1000) {
+        console.log('✅ Calibration restaurée:', val.toFixed(1), 'DPI');
+        return val;
+      }
+    }
+  } catch (e) {
+    console.warn('Lecture calibration impossible:', e);
+  }
+  return null;
+})();
+
 let currentPanel = 'ruler';
+
+// Helpers de persistance
+function saveCustomDPI(val) {
+  try {
+    localStorage.setItem(CALIB_STORAGE_KEY, String(val));
+    console.log('💾 Calibration sauvée:', val.toFixed(1), 'DPI');
+  } catch (e) {
+    console.error('Sauvegarde calibration impossible:', e);
+  }
+}
+
+function clearCustomDPI() {
+  try {
+    localStorage.removeItem(CALIB_STORAGE_KEY);
+    console.log('🗑️ Calibration réinitialisée');
+  } catch (e) {
+    console.error(e);
+  }
+}
 
 function getPhysicalDPI() {
   if (customDPI) return customDPI;
@@ -2072,7 +2109,11 @@ function drawLuxCanvas() {
    PANEL 9 — CALIBRATION
 ================================================================ */
 function initCalib() {
-  document.getElementById('calib-dpi-val').textContent = fmt(getPhysicalDPI(), 1) + ' DPI';
+  const dpiVal = getPhysicalDPI();
+  const label = customDPI 
+    ? fmt(dpiVal, 1) + ' DPI ✅ (calibré)' 
+    : fmt(dpiVal, 1) + ' DPI (auto)';
+  document.getElementById('calib-dpi-val').textContent = label;
   drawCalibRuler();
   updateScreenDetails();
 }
@@ -2134,8 +2175,10 @@ document.getElementById('btn-calib-apply').addEventListener('click', () => {
   const newDPI = (rulerPx / val) * 25.4;
   if (newDPI > 50 && newDPI < 1000) {
     customDPI = newDPI;
+    saveCustomDPI(customDPI);
     document.getElementById('calib-dpi-val').textContent = fmt(customDPI, 1) + ' DPI ✅';
     drawCalibRuler();
+    updateScreenDetails();
     alert('Calibration appliquée : ' + fmt(customDPI, 1) + ' DPI');
   } else {
     alert('Valeur incohérente, vérifiez la saisie.');
@@ -2144,8 +2187,10 @@ document.getElementById('btn-calib-apply').addEventListener('click', () => {
 
 document.getElementById('btn-calib-reset').addEventListener('click', () => {
   customDPI = null;
+  clearCustomDPI();
   document.getElementById('calib-dpi-val').textContent = fmt(getPhysicalDPI(), 1) + ' DPI';
   drawCalibRuler();
+  updateScreenDetails()
 });
 
 /* ================================================================
